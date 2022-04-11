@@ -1,31 +1,52 @@
+import java.util.List;
+
 public class Numeric {
     public static String convertNumber(String number) {
-        String formattedNumber = "";
-        if (number.equals("I")) {
-            formattedNumber = "1";
-        } else if (number.equals("II")) {
-            formattedNumber = "2";
-        } else if (number.equals("III")) {
-            formattedNumber = "3";
-        } else if (number.equals("IV")) {
-            formattedNumber = "4";
-        } else if (number.equals("V")) {
-            formattedNumber = "5";
-        } else if (number.equals("VI")) {
-            formattedNumber = "6";
-        } else if (number.equals("VII")) {
-            formattedNumber = "7";
-        } else if (number.equals("VIII")) {
-            formattedNumber = "8";
-        } else if (number.equals("IX")) {
-            formattedNumber = "9";
-        } else if (number.equals("X")) {
-            formattedNumber = "10";
-        } else {
-            formattedNumber = number;
+        if (!isRomanSystem(number)) {
+            return number;
+        }
+        String romanNumeral = number.toUpperCase();
+        int result = 0;
+        List<RomanNumeral> romanNumerals = RomanNumeral.getReverseSortedValues();
+        int i = 0;
+
+        while ( (romanNumeral.length() > 0) && (i < romanNumerals.size()) ) {
+            RomanNumeral symbol = romanNumerals.get(i);
+            if (romanNumeral.startsWith(symbol.name())) {
+                result += symbol.getValue();
+                romanNumeral = romanNumeral.substring(symbol.name().length());
+            } else {
+                i++;
+            }
         }
 
-        return formattedNumber;
+        if (romanNumeral.length() > 0) {
+            throw new IllegalArgumentException(number + " cannot be converted to a Roman system");
+        }
+
+        return Integer.toString(result);
+    }
+
+    public static String convertStringToRoman(int number) {
+        if ((number <= 0) || (number > 4000)) {
+            throw new IllegalArgumentException("The format does not satisfy the task");
+        }
+
+        List<RomanNumeral> romanNumerals = RomanNumeral.getReverseSortedValues();
+        int i = 0;
+        StringBuilder sb = new StringBuilder();
+
+        while ((number > 0) && (i < romanNumerals.size())) {
+            RomanNumeral currentSymbol = romanNumerals.get(i);
+            if (currentSymbol.getValue() <= number) {
+                sb.append(currentSymbol.name());
+                number -= currentSymbol.getValue();
+            } else {
+                i++;
+            }
+        }
+
+        return sb.toString();
     }
 
     public static boolean isRomanSystem(String str) {
