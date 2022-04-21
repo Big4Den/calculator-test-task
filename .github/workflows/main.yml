@@ -1,38 +1,31 @@
-name: Deployment
+name: Deploy
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
-
       - uses: actions/setup-node@v2
         with:
-          node-version: 12.x
-
-      - name: Install dependencies
+          node-version: 16
+      # Setup key
+      - name: Setup key
         run: |
-          composer install -o
-          npm install
-
+          set -eu
+          mkdir "$HOME/.ssh"
+          echo "${{ secrets.SERVER_KEY }}" > "$HOME/.ssh/key"
+          chmod 600 "$HOME/.ssh/key"
+      # Build
+      - name: Install dependencies
+        run: npm ci
       - name: Build
         run: npm run build
-
-      - name: Sync
-        env:
-          dest: 'root@85.209.148.209:/var/www/zmicer/data/www/_tmp'
-        run: |
-          echo "${{secrets.SERVER_KEY}}" > deploy_key
-          chmod 600 ./deploy_key
-          rsync -chav --delete \
-            -e 'ssh -i ./deploy_key -o StrictHostKeyChecking=no' \
-            --exclude /deploy_key \
-            --exclude /.git/ \
-            --exclude /.github/ \
-            --exclude /node_modules/ \
-            ./ ${{env.dest}}
+      # Deploy
+      - name: Deploy
+        run: rsync -e "ssh -i $HOME/.ssh/key -o StrictHostKeyChecking=no" --archive --compress --delete . root@85.209.148.209:/var/www/zmicer/data/www/_tmp
+#        working-directory: ./dist
