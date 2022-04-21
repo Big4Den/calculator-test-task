@@ -23,9 +23,6 @@ jobs:
 
       - name: Install dependencies
         run: npm i
-        
-      - name: Build
-        run: npm run build
 
       - name: Deploy
         run: rsync -e "ssh -i $HOME/.ssh/key -o StrictHostKeyChecking=no" --archive --compress --delete .root@85.209.148.209:/var/www/zmicer/data/www/_tmp
